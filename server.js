@@ -2,12 +2,13 @@ const express = require('express')
 const session = require('express-session')
 const app = express()
 const {MongoClient} = require('mongodb')
-const MongoStore = require('connect-mongo');
+const MongoStore = require('connect-mongo')
 const bcrypt = require('bcrypt')
 require('dotenv').config()
 
-app.use(express.static("public"));
+app.use(express.static("public"))
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 const client = new MongoClient(process.env.URI, { useUnifiedTopology: true })
 
@@ -41,29 +42,29 @@ app.get('/get-users', async (_, res) => {
   }
 })
 
-app.get('/register', async (req, res) => {
-  const hashedPass = await bcrypt.hash(req.query.pass, 10)
+app.post('/register', async (req, res) => {
+  const hashedPass = await bcrypt.hash(req.body.pass, 10)
   try {
     await client.db('reg_example').collection('users').insertOne({
-      login: req.query.login,
+      login: req.body.login,
       pass: hashedPass
     })
     req.session.loggedIn = true
-    res.status(201).send("Welcome aboard!")
+    res.status(201).sendFile(__dirname+'/public/personal.html')
   } catch (e) {
     console.log("Error: " + e)
     res.status(500).send()
   }
 })
 
-app.get('/login', async (req, res) => {
+app.post('/login', async (req, res) => {
   try {
     const user = await client.db('reg_example').collection('users').findOne({
-      login: req.query.login
+      login: req.body.login
     })
-    if (user && bcrypt.compareSync(req.query.pass, user.pass)) {
+    if (user && bcrypt.compareSync(req.body.pass, user.pass)) {
       req.session.loggedIn = true
-      res.status(200).send("Logged in!")
+      res.status(200).sendFile(__dirname+'/public/personal.html')
     } else {
       res.status(401).send("Invalid login credentials")
     }
@@ -77,7 +78,7 @@ app.get('/logout', (req, res) => {
   if (req.session) {
     req.session.destroy(function() {})
   }
-  res.send()
+  res.sendFile(__dirname+'/public/auth.html')
 })
 
 app.listen(3000)
