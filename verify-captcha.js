@@ -1,4 +1,4 @@
-const request = require('request')
+const axios = require('axios')
 
 module.exports = {
   verifyCaptcha: function (req, res, cb) {
@@ -6,16 +6,17 @@ module.exports = {
       return res.status(401).send("Invalid captcha")
     }
 
-    const verificationURL = "https://www.google.com/recaptcha/api/siteverify?secret=" + process.env.SECRET_KEY + "&response=" + req.body['g-recaptcha-response'] + "&remoteip=" + req.socket.remoteAddress
+    const URL = "https://www.google.com/recaptcha/api/siteverify?secret=" + process.env.SECRET_KEY + "&response=" + req.body['g-recaptcha-response'] + "&remoteip=" + req.socket.remoteAddress
 
-    request(verificationURL, async function(_, _, body) {
-      body = JSON.parse(body)
-
-      if (body.success !== undefined && !body.success) {
+    axios.get(URL).then(function (response) {
+      if (response.data.success !== undefined && !response.data.success) {
         return res.status(401).send("Invalid captcha")
       }
 
       cb()
+    })
+    .catch(function (error) {
+      console.log(error);
     })
   }
 }
