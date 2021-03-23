@@ -50,7 +50,7 @@ app.post('/register', async (req, res) => {
       pass: hashedPass
     })
     req.session.loggedIn = true
-    res.status(201).sendFile(__dirname+'/public/personal.html')
+    res.status(201).redirect('/')
   } catch (e) {
     console.log("Error: " + e)
     res.status(500).send()
@@ -64,7 +64,7 @@ app.post('/login', async (req, res) => {
     })
     if (user && bcrypt.compareSync(req.body.pass, user.pass)) {
       req.session.loggedIn = true
-      res.status(200).sendFile(__dirname+'/public/personal.html')
+      res.status(200).redirect('/')
     } else {
       res.status(401).send("Invalid login credentials")
     }
@@ -78,7 +78,7 @@ app.get('/logout', (req, res) => {
   if (req.session) {
     req.session.destroy(function() {})
   }
-  res.sendFile(__dirname+'/public/auth.html')
+  res.redirect('/')
 })
 
 app.listen(3000)
