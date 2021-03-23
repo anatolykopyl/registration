@@ -1,0 +1,14 @@
+* {
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+span.input_row {
+  display: flex;
+  justify-content: space-between;
+}
+
+form {
+  width: 30%;
+  margin: auto;
+}
