@@ -12,6 +12,7 @@
   <form action="http://localhost:3000/register" method="POST">
     <span class="input_row">Username: <input name="login" type="text"></span>
     <span class="input_row">Password: <input name="pass" type="password"></span>
+    <input type="hidden" class="g-recaptcha-response" name="g-recaptcha-response">
     <input type="submit" value="Register">
   </form>
 
@@ -19,7 +20,19 @@
   <form action="http://localhost:3000/login" method="POST">
     <span class="input_row">Username: <input name="login" type="text"></span>
     <span class="input_row">Password: <input name="pass" type="password"></span>
+    <input type="hidden" class="g-recaptcha-response" name="g-recaptcha-response">
     <input type="submit" value="Login">
   </form>
+
+  <script src="https://www.google.com/recaptcha/api.js?render=6LcTXIsaAAAAAGWE4913KuaqU1tTT9uyqmvPADcn"></script>
+  <script>
+    grecaptcha.ready(function () {
+      grecaptcha.execute('6LcTXIsaAAAAAGWE4913KuaqU1tTT9uyqmvPADcn', { action: 'demo' })
+        .then(function (token) {
+          document.getElementsByClassName('g-recaptcha-response')[0].value = token;
+          document.getElementsByClassName('g-recaptcha-response')[1].value = token;
+        });
+    });
+  </script>
 </body>
 </html>
