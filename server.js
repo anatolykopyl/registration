@@ -29,16 +29,16 @@ client.connect()
 
 app.get('/', (req, res) => {
   if (req.session.loggedIn) {
-    res.sendFile(__dirname+'/public/personal.html')
+    res.status(200).sendFile(__dirname+'/public/personal.html')
   } else {
-    res.sendFile(__dirname+'/public/auth.html')
+    res.status(200).sendFile(__dirname+'/public/auth.html')
   }
 })
 
 app.get('/get-users', async (_, res) => {
   try {
     const users = await client.db('reg_example').collection('users').find().toArray()
-    res.send(users)
+    res.status(200).send(users)
   } catch (e) {
     console.log("Error: " + e)
     res.status(500).send()
