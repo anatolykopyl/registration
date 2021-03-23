@@ -49,12 +49,19 @@ app.post('/register', async (req, res) => {
   verifyCaptcha(req, res, async () => {
     const hashedPass = await bcrypt.hash(req.body.pass, 10)
     try {
-      await client.db('reg_example').collection('users').insertOne({
-        login: req.body.login,
-        pass: hashedPass
+      const user = await client.db('reg_example').collection('users').findOne({
+        login: req.body.login
       })
-      req.session.loggedIn = true
-      res.status(201).redirect('/')
+      if (user) {
+        res.send('A user with this username already exists.')
+      } else {
+        await client.db('reg_example').collection('users').insertOne({
+          login: req.body.login,
+          pass: hashedPass
+        })
+        req.session.loggedIn = true
+        res.status(201).redirect('/')
+      }
     } catch (e) {
       console.log("Error: " + e)
       res.status(500).send()
