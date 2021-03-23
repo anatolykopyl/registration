@@ -76,7 +76,7 @@ app.post('/login', async (req, res) => {
 
 app.get('/logout', (req, res) => {
   if (req.session) {
-    req.session.destroy(function() {})
+    req.session.loggedIn = false
   }
   res.redirect('/')
 })
