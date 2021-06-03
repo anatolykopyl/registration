@@ -2,13 +2,15 @@ const express = require('express')
 const cookieSession = require('cookie-session')
 const app = express()
 const cors = require('cors')
+const https = require('https')
+const fs = require('fs')
 require('dotenv').config()
 
 app.use(cookieSession({
   name: 'session',
   secret: process.env.SECRET,
   maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  secure: false,
+  secure: process.env.NODE_ENV === 'production',
   sameSite: 'none'
 }))
 
@@ -41,4 +43,12 @@ app.post('/api/logout', (req, res) => {
   }
 })
 
-app.listen(process.env.PORT)
+if (process.env.NODE_ENV === 'production') {
+  https.createServer({
+    key: fs.readFileSync(process.env.SSL + '/privkey.pem'),
+    cert: fs.readFileSync(process.env.SSL + '/cert.pem')
+  }, app)
+    .listen(process.env.PORT, () => console.log('Prod server started on ' + process.env.PORT));
+} else {
+  app.listen(process.env.PORT, () => console.log('Dev server started on ' + process.env.PORT));
+}

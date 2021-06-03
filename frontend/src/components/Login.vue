@@ -26,6 +26,11 @@
         <PassNBtns loginMethod="email" @flip="usePhone = !usePhone" @auth="auth" />
       </div>
     </transition>
+    <transition name="slide">
+      <div v-if="msg" class="msg" v-bind:key="msg">
+        {{msg}}
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -43,6 +48,7 @@ export default {
   },
   data() {
     return {
+      msg: '',
       usePhone: false,
       email: '',
       phone: '',
@@ -57,34 +63,55 @@ export default {
         return 'primary'
       }
     },
-    async auth(pass) {
-      axios({
-        method: "post",
-        url: "http://127.0.0.1:3000/api/login",
-        withCredentials: true,
-        responseType: 'arraybuffer',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        data: {
-          login: this.usePhone ? this.phone : this.email,
-          pass: pass
-        }
-      }).then((response) => {
-        var bytes = new Uint8Array(response.data);
-        var binary = bytes.reduce((data, b) => data += String.fromCharCode(b), '');
-        this.src = "data:image/jpeg;base64," + btoa(binary);
-        this.$emit('auth', this.src)
-      });
+    auth(pass, onload) {
+      if (onload || (pass && this.usePhone ? this.phone : this.email)) {
+        axios({
+          method: "post",
+          url: "http://127.0.0.1:3000/api/login",
+          withCredentials: true,
+          responseType: 'arraybuffer',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          data: {
+            login: this.usePhone ? this.phone : this.email,
+            pass: pass
+          }
+        }).then((response) => {
+          this.msg = ''
+          var bytes = new Uint8Array(response.data);
+          var binary = bytes.reduce((data, b) => data += String.fromCharCode(b), '');
+          this.src = "data:image/jpeg;base64," + btoa(binary);
+          this.$emit('auth', this.src)
+        }).finally(() => {
+          if (!onload) {
+            this.msg = 'Invalid credentials'
+          }
+        });
+      } else {
+        this.msg = 'Please enter your credentials'
+      }
     }
   },
   mounted() {
-    this.auth()
+    this.auth('', true)
   }
 }
 </script>
 
 <style scoped>
+  .msg {
+    position: relative;
+    padding: .8rem;
+    background-color: #FFF;
+    border-radius: .3rem;
+    text-align: center;
+    max-width: 150px;
+    margin: 3em auto 0 auto;
+    color: orangered;
+    z-index: -10;
+  }
+
   .flip-enter-active {
     transition: all 0.4s ease;
   }
@@ -92,5 +119,13 @@ export default {
   .flip-enter, .flip-leave {
     transform: perspective(1000px) rotateY(180deg);
     opacity: 0;
+  }
+
+  .slide-enter-active {
+    transition: all 0.4s ease;
+  }
+  
+  .slide-enter, .slide-leave {
+    transform: translateY(-100px);
   }
 </style>
