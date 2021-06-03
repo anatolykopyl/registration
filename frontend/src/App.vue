@@ -86,8 +86,4 @@ body {
   max-width: 600px;
   margin: auto;
 }
-
-@media screen and (max-width: 600px) {
-  
-}
 </style>

@@ -29,8 +29,8 @@
         <PassNBtns loginMethod="email" @flip="usePhone = !usePhone" @auth="auth" />
       </div>
     </transition>
-    <transition name="slide">
-      <div v-if="msg" class="msg" v-bind:key="msg" :class="{'bounce animated': animated}">
+    <transition name="slide" mode="out-in">
+      <div v-if="msg" class="msg" v-bind:key="msg===''" :class="{'bounce animated': animated}">
         {{msg}}
       </div>
     </transition>
