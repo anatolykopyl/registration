@@ -9,6 +9,7 @@
           left-icon-name="email"
           class="maz-mb-2"
           :color=validateEmail()
+          :class="{'is-focused': validateEmail() === 'success'}"
           clearable
         />
         <PassNBtns loginMethod="phone" @flip="usePhone = !usePhone" @auth="auth" />
@@ -27,7 +28,7 @@
       </div>
     </transition>
     <transition name="slide">
-      <div v-if="msg" class="msg" v-bind:key="msg">
+      <div v-if="msg" class="msg" v-bind:key="msg" :class="{'bounce animated': animated}">
         {{msg}}
       </div>
     </transition>
@@ -49,6 +50,7 @@ export default {
   data() {
     return {
       msg: '',
+      animated: false,
       usePhone: false,
       email: '',
       phone: '',
@@ -85,12 +87,23 @@ export default {
           this.$emit('auth', this.src)
         }).finally(() => {
           if (!onload) {
+            if (this.msg != '') {
+              this.animate()
+            }
             this.msg = 'Invalid credentials'
           }
         });
       } else {
+        if (this.msg != '') {
+          this.animate()
+        }
         this.msg = 'Please enter your credentials'
       }
+    },
+    animate: function() {
+      var self = this;
+      self.animated = true;
+      setTimeout(function(){ self.animated = false; }, 1000);
     }
   },
   mounted() {
@@ -127,5 +140,29 @@ export default {
   
   .slide-enter, .slide-leave {
     transform: translateY(-100px);
+  }
+
+  .animated {
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s; 
+    -webkit-animation-fill-mode: both; 
+    animation-fill-mode: both; 
+  }
+  
+  @-webkit-keyframes bounce { 
+    0%, 20%, 50%, 80%, 100% {-webkit-transform: translateY(0);} 
+    40% {-webkit-transform: translateY(-30px);} 
+    60% {-webkit-transform: translateY(-15px);} 
+  } 
+  
+  @keyframes bounce { 
+    0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 
+    40% {transform: translateY(-30px);} 
+    60% {transform: translateY(-15px);} 
+  }
+  
+  .bounce { 
+    -webkit-animation-name: bounce; 
+    animation-name: bounce; 
   }
 </style>
