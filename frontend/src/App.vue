@@ -1,10 +1,10 @@
 <template>
   <div>
-    <img src="./assets/logo.png">
-    <h2 v-if="loggedin">
-      Прикол
-    </h2>
-    <Login v-else id="login" />
+    <img id="logo" src="./assets/logo.png">
+    <div class="pageSide" v-if="loggedin">
+      <img :src="image" >
+    </div>
+    <Login v-else id="login" @auth="auth" />
   </div>
 </template>
 
@@ -18,7 +18,15 @@ export default {
   },
   data() {
     return {
-      loggedin: false
+      loggedin: false,
+    }
+  },
+  methods: {
+    auth(image) {
+      if (image) {
+        this.loggedin = true
+        this.image = image
+      }
     }
   }
 }
@@ -38,11 +46,18 @@ body {
   margin-top: 60px;
 }
 
-img {
+#logo {
   width: 100px;
   padding: 50px;
   margin: auto;
   display: block;
   border-radius: 50%;
+}
+
+.pageSide {
+  padding: 1.5rem;
+  background-color: #FFF;
+  border-radius: .3rem;
+  text-align: center;
 }
 </style>

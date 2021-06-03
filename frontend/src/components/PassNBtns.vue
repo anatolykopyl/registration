@@ -4,7 +4,7 @@
       v-model="pass"
       placeholder="Password"
       type="password"
-      autocomplete="new-password"
+      autocomplete="current-password"
       left-icon-name="lock"
       class="maz-mb-2"
       clearable

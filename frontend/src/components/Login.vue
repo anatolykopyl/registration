@@ -5,7 +5,7 @@
         <MazInput
           v-model="email"
           placeholder="E-mail"
-          autocomplete="new-email"
+          autocomplete="email"
           left-icon-name="email"
           class="maz-mb-2"
           :color=validateEmail()
@@ -18,6 +18,7 @@
           v-model="phone" 
           default-country-code="RU" 
           no-country-selector 
+          autocomplete="tel"
           class="maz-mb-2"
           left-icon-name="phone"
           clearable
@@ -57,24 +58,33 @@ export default {
       }
     },
     async auth(pass) {
-      const response = await axios.post("http://localhost:3000/api/login", {
-        login: this.usePhone ? this.phone : this.email,
-        pass: pass
+      axios({
+        method: "post",
+        url: "http://127.0.0.1:3000/api/login",
+        withCredentials: true,
+        responseType: 'arraybuffer',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: {
+          login: this.usePhone ? this.phone : this.email,
+          pass: pass
+        }
+      }).then((response) => {
+        var bytes = new Uint8Array(response.data);
+        var binary = bytes.reduce((data, b) => data += String.fromCharCode(b), '');
+        this.src = "data:image/jpeg;base64," + btoa(binary);
+        this.$emit('auth', this.src)
       });
-      this.loggedIn = response.data.loggedIn;
     }
+  },
+  mounted() {
+    this.auth()
   }
 }
 </script>
 
 <style scoped>
-  .pageSide {
-    padding: 1.5rem;
-    background-color: #FFF;
-    border-radius: .3rem;
-    text-align: center;
-  }
-
   .flip-enter-active {
     transition: all 0.4s ease;
   }

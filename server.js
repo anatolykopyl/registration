@@ -1,98 +1,44 @@
 const express = require('express')
-const session = require('express-session')
+const cookieSession = require('cookie-session')
 const app = express()
-const {MongoClient} = require('mongodb')
-const MongoStore = require('connect-mongo')
-const bcrypt = require('bcrypt')
+const cors = require('cors')
 require('dotenv').config()
 
-const {verifyCaptcha} = require('./verify-captcha')
-
-app.use(express.static(__dirname + '/public'))
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-
-const client = new MongoClient(process.env.URI, { useUnifiedTopology: true })
-
-app.use(session({
+app.use(cookieSession({
+  name: 'session',
   secret: process.env.SECRET,
-  resave: false,
-  saveUninitialized: true,
-  store: MongoStore.create({
-    client,
-    dbName: 'reg_example'
-  }),
-  cookie: { maxAge: 1000 * 60 * 60 * 24 }
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  secure: false,
+  sameSite: 'none'
 }))
 
-client.connect()
+app.set('trust proxy', 2)
 
-app.get('/', (req, res) => {
+app.use(
+  express.urlencoded({ extended: true }),
+  express.json(),
+  cors({credentials: true, origin: 'http://localhost:8080'})
+)
+
+app.post('/api/login', (req, res) => {
+  req.session.loggedIn = req.session.loggedIn ?? false
   if (req.session.loggedIn) {
-    res.status(200).sendFile(__dirname+'/public/personal.html')
+    res.status(200).sendFile(__dirname+'/public/pic.jpg');
   } else {
-    res.status(200).sendFile(__dirname+'/public/auth.html')
+    if ((req.body.login === 'gora@studio.ru' || req.body.login === "+79211231313") && req.body.pass === "2021") {
+      req.session.loggedIn = true
+      res.status(200).sendFile(__dirname+'/public/pic.jpg')
+    } else {
+      res.status(401).send()
+    }
   }
 })
 
-app.get('/get-users', async (_, res) => {
-  try {
-    const users = await client.db('reg_example').collection('users').find().toArray()
-    res.status(200).send(users)
-  } catch (e) {
-    console.log("Error: " + e)
-    res.status(500).send()
-  }
-})
-
-app.post('/register', async (req, res) => {
-  verifyCaptcha(req, res, async () => {
-    const hashedPass = await bcrypt.hash(req.body.pass, 10)
-    try {
-      const user = await client.db('reg_example').collection('users').findOne({
-        login: req.body.login
-      })
-      if (user) {
-        res.send('A user with this username already exists.')
-      } else {
-        await client.db('reg_example').collection('users').insertOne({
-          login: req.body.login,
-          pass: hashedPass
-        })
-        req.session.loggedIn = true
-        res.status(201).redirect('/')
-      }
-    } catch (e) {
-      console.log("Error: " + e)
-      res.status(500).send()
-    }
-  })
-})
-
-app.post('/login', async (req, res) => {
-  verifyCaptcha(req, res, async () => {
-    try {
-      const user = await client.db('reg_example').collection('users').findOne({
-        login: req.body.login
-      })
-      if (user && bcrypt.compareSync(req.body.pass, user.pass)) {
-        req.session.loggedIn = true
-        res.status(200).redirect('/')
-      } else {
-        res.status(401).send("Invalid login credentials")
-      }
-    } catch (e) {
-      console.log("Error: " + e)
-      res.status(500).send()
-    }
-  })
-})
-
-app.get('/logout', (req, res) => {
+app.post('/api/logout', (req, res) => {
   if (req.session) {
     req.session.loggedIn = false
+    res.status(200).send()
   }
-  res.redirect('/')
 })
 
 app.listen(process.env.PORT)
