@@ -6,6 +6,7 @@
           v-model="email"
           placeholder="E-mail"
           autocomplete="email"
+          type="email"
           left-icon-name="email"
           class="maz-mb-2"
           :color=validateEmail()
@@ -19,6 +20,7 @@
           v-model="phone" 
           default-country-code="RU" 
           no-country-selector 
+          type="tel"
           autocomplete="tel"
           class="maz-mb-2"
           left-icon-name="phone"

@@ -34,12 +34,20 @@ export default {
     auth(image) {
       if (image) {
         this.loggedin = true
-        this.image = image  
+        this.image = image
+        history.pushState(
+          {},
+          'logged in'
+        )
       }
     },
     logout() {
       axios.post('http://127.0.0.1:3000/api/logout').then(() => {
         this.loggedin = false
+        history.pushState(
+          {},
+          'logged out'
+        )
       });
     }
   }
